@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { createPost, deletePost, fetchData, updatePost } from "../axios";
+import { createPost, deletePost, fetchData } from "../axios";
 
 const Posts = () => {
   const [posts, setPosts] = useState([]);
-  const [editingPostId, setEditingPostId] = useState(null);
   const [fakeData, setFakeData] = useState({
     title: "",
     body: "",
@@ -34,7 +33,6 @@ const Posts = () => {
       title: "",
       body: "",
     });
-    setEditingPostId(null);
   };
 
   const handleSubmit = async (e) => {
@@ -44,33 +42,11 @@ const Posts = () => {
     }
 
     try {
-      if (editingPostId) {
-        const updatedPost = await updatePost(editingPostId, fakeData);
-        setPosts((currentPosts) =>
-          currentPosts.map((post) =>
-            post.id === editingPostId ? { ...post, ...updatedPost } : post,
-          ),
-        );
-      } else {
-        const newPost = await createPost(fakeData);
-        setPosts((currentPosts) => [newPost, ...currentPosts]);
-      }
-
+      const newPost = await createPost(fakeData);
+      setPosts((currentPosts) => [newPost, ...currentPosts]);
       resetForm();
     } catch (error) {
       console.error("Error saving post", error);
-    }
-  };
-
-  const handleEdit = (id) => {
-    const selectedPost = posts.find((post) => post.id === id);
-
-    if (selectedPost) {
-      setEditingPostId(id);
-      setFakeData({
-        title: selectedPost.title,
-        body: selectedPost.body,
-      });
     }
   };
 
@@ -109,14 +85,7 @@ const Posts = () => {
           />
         </div>
 
-        <button type="submit">
-          {editingPostId ? "Update Post" : "Create Post"}
-        </button>
-        {editingPostId && (
-          <button type="button" onClick={resetForm}>
-            Cancel
-          </button>
-        )}
+        <button type="submit">Create Post</button>
       </form>
       <div
         style={{
@@ -141,7 +110,6 @@ const Posts = () => {
             <p style={{ fontSize: "1rem" }}>{post.body}</p>
 
             <div style={{ display: "flex", gap: "8px" }}>
-              <button onClick={() => handleEdit(post.id)}>Edit</button>
               <button onClick={() => handleDeletePost(post.id)}>Delete</button>
             </div>
           </div>

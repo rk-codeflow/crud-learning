@@ -28,6 +28,16 @@ export const createPost = async (post) => {
   }
 };
 
+// update request
+export const updatePost = async (id) => {
+  try {
+    const res = await api.put(`/posts/${id}`);
+    console.log("update", res);
+  } catch (error) {
+    console.error("Error updating data", error);
+  }
+};
+
 // delete
 export const deletePost = async (id) => {
   try {

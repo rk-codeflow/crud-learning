@@ -3,6 +3,7 @@ import { createPost, deletePost, fetchData } from "../axios";
 
 const Posts = () => {
   const [posts, setPosts] = useState([]);
+  const [editPostID, setEditPostID] = useState();
   const [fakeData, setFakeData] = useState({
     title: "",
     body: "",
@@ -28,13 +29,6 @@ const Posts = () => {
     setFakeData({ ...fakeData, [name]: value });
   };
 
-  const resetForm = () => {
-    setFakeData({
-      title: "",
-      body: "",
-    });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!fakeData.title.trim() || !fakeData.body.trim()) {
@@ -44,9 +38,22 @@ const Posts = () => {
     try {
       const newPost = await createPost(fakeData);
       setPosts((currentPosts) => [newPost, ...currentPosts]);
-      resetForm();
     } catch (error) {
       console.error("Error saving post", error);
+    }
+  };
+
+  const handleEditPost = (id) => {
+    const selectedPost = posts.find((post) => post.id === id);
+    console.log({ selectedPost });
+
+    if (selectedPost) {
+      setEditPostID(id);
+      console.log({ editPostID });
+      setFakeData({
+        title: selectedPost.title,
+        body: selectedPost.body,
+      });
     }
   };
 
@@ -111,6 +118,7 @@ const Posts = () => {
 
             <div style={{ display: "flex", gap: "8px" }}>
               <button onClick={() => handleDeletePost(post.id)}>Delete</button>
+              <button onClick={() => handleEditPost(post.id)}>Edit</button>
             </div>
           </div>
         ))}

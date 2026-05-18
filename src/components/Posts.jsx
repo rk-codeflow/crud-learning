@@ -1,13 +1,21 @@
 import { useEffect, useState } from "react";
-import { createPost, deletePost, fetchData } from "../axios";
+import { createPost, deletePost, fetchData, updatePost } from "../axios";
 
 const Posts = () => {
   const [posts, setPosts] = useState([]);
-  const [editPostID, setEditPostID] = useState();
+  const [editPostID, setEditPostID] = useState(null);
   const [fakeData, setFakeData] = useState({
     title: "",
     body: "",
   });
+
+  const resetForm = () => {
+    setEditPostID(null);
+    setFakeData({
+      title: "",
+      body: "",
+    });
+  };
 
   useEffect(() => {
     fetchData().then((data) => {
@@ -26,7 +34,7 @@ const Posts = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFakeData({ ...fakeData, [name]: value });
+    setFakeData((currentData) => ({ ...currentData, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -36,8 +44,19 @@ const Posts = () => {
     }
 
     try {
-      const newPost = await createPost(fakeData);
-      setPosts((currentPosts) => [newPost, ...currentPosts]);
+      if (editPostID !== null) {
+        const updatedPost = await updatePost(editPostID, fakeData);
+        setPosts((currentPosts) =>
+          currentPosts.map((post) =>
+            post.id === editPostID ? { ...post, ...updatedPost } : post
+          )
+        );
+      } else {
+        const newPost = await createPost(fakeData);
+        setPosts((currentPosts) => [newPost, ...currentPosts]);
+      }
+
+      resetForm();
     } catch (error) {
       console.error("Error saving post", error);
     }
@@ -45,11 +64,9 @@ const Posts = () => {
 
   const handleEditPost = (id) => {
     const selectedPost = posts.find((post) => post.id === id);
-    console.log({ selectedPost });
 
     if (selectedPost) {
       setEditPostID(id);
-      console.log({ editPostID });
       setFakeData({
         title: selectedPost.title,
         body: selectedPost.body,
@@ -92,7 +109,14 @@ const Posts = () => {
           />
         </div>
 
-        <button type="submit">Create Post</button>
+        <button type="submit">
+          {editPostID !== null ? "Update Post" : "Create Post"}
+        </button>
+        {editPostID !== null && (
+          <button type="button" onClick={resetForm}>
+            Cancel Edit
+          </button>
+        )}
       </form>
       <div
         style={{
@@ -117,8 +141,12 @@ const Posts = () => {
             <p style={{ fontSize: "1rem" }}>{post.body}</p>
 
             <div style={{ display: "flex", gap: "8px" }}>
-              <button onClick={() => handleDeletePost(post.id)}>Delete</button>
-              <button onClick={() => handleEditPost(post.id)}>Edit</button>
+              <button type="button" onClick={() => handleDeletePost(post.id)}>
+                Delete
+              </button>
+              <button type="button" onClick={() => handleEditPost(post.id)}>
+                Edit
+              </button>
             </div>
           </div>
         ))}

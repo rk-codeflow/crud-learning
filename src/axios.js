@@ -29,12 +29,13 @@ export const createPost = async (post) => {
 };
 
 // update request
-export const updatePost = async (id) => {
+export const updatePost = async (id, post) => {
   try {
-    const res = await api.put(`/posts/${id}`);
-    console.log("update", res);
+    const res = await api.put(`/posts/${id}`, post);
+    return res.data;
   } catch (error) {
     console.error("Error updating data", error);
+    throw error;
   }
 };
 
